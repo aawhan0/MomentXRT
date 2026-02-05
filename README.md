@@ -19,15 +19,15 @@ It is designed as a lightweight, server-side extension for Ant Media Server.
 ## Project Structure
 
 ```text
-/momentx_rt/
+/MomentX_RT/
   ├─ server/     # Core service & Ant Media integration
   ├─ triggers/   # Moment detection logic
   ├─ clipper/    # Clip generation
-
+```
 ---
 
 ## Hackathon
 
 - Ant Media AI Hackathon 2026
 - Team: error200
-- Project: MOmentX RT
+- Project: MomentX RT
