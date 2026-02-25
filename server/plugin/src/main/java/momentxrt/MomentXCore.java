@@ -11,15 +11,16 @@ import momentxrt.clipper.ClipWindowCalculator;
 import momentxrt.ui.ConsoleVisualizer;
 import momentxrt.timeline.Timeline;
 import momentxrt.timeline.TimelineEntry;
+
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Entry point for MomentX RT plugin.
- * Hackathon-safe minimal implementation.
+ * Core engine for MomentX RT.
+ * Independent from Ant Media lifecycle.
  */
-public class MomentXRTPlugin {
+public class MomentXCore {
 
-    // Core components (ORDER MATTERS)
     private final EventBus eventBus = new EventBus();
     private final ManualTrigger manualTrigger = new ManualTrigger();
     private final AudioSpikeTrigger audioTrigger = new AudioSpikeTrigger(0.7);
@@ -34,47 +35,66 @@ public class MomentXRTPlugin {
     );
 
     private final ClipWindowCalculator clipCalculator =
-        new ClipWindowCalculator(5000, 7000);
+            new ClipWindowCalculator(5000, 7000);
 
-    public void start() {
-        System.out.println("MomentX RT plugin started");
+    private final AtomicBoolean running = new AtomicBoolean(false);
+    private Thread pollingThread;
+    private String activeStreamId;
+
+    public void startStream(String streamId) {
+        if (running.get()) {
+            return;
+        }
+
+        this.activeStreamId = streamId;
+        running.set(true);
+
+        System.out.println("🚀 MomentX Core started for stream: " + streamId);
 
         eventBus.registerHandler(this::handleMoment);
 
-        // Demo: run a simple trigger loop
-        for (int i = 0; i < 5; i++) {
-
-            // Simulate audio levels
-            double simulatedLevel = (i == 3) ? 0.9 : 0.2;
-            audioTrigger.updateLevel(simulatedLevel);
-
-            pollTriggers();
-
-            // Fire manual trigger once in the middle
-            if (i == 2) {
-                manualTrigger.fire();
+        pollingThread = new Thread(() -> {
+            while (running.get()) {
+                pollTriggers();
+                sleep(200);
             }
+        });
 
-            sleep(500);
-        }
-
-        stop();
+        pollingThread.setDaemon(true);
+        pollingThread.start();
     }
 
-    public void stop() {
-        System.out.println("MomentX RT plugin stopped");
+    public void stopStream(String streamId) {
+        if (!running.get()) {
+            return;
+        }
+
+        running.set(false);
+
+        System.out.println("🛑 MomentX Core stopping for stream: " + streamId);
+
+        try {
+            if (pollingThread != null) {
+                pollingThread.join(1000);
+            }
+        } catch (InterruptedException ignored) {
+        }
+
         timeline.printSummary();
         timeline.printJson();
     }
 
     private void pollTriggers() {
         for (Trigger trigger : triggers) {
+
             if (!config.isTriggerEnabled(trigger.getName())) {
-                    continue;
+                continue;
             }
-            
+
             MomentEvent event = trigger.check();
+
             if (event != null) {
+                event.setStreamId(activeStreamId);
                 eventBus.publish(event);
             }
         }
@@ -82,7 +102,7 @@ public class MomentXRTPlugin {
 
     private void handleMoment(MomentEvent event) {
         ClipWindow window = clipCalculator.calculate(event);
-        
+
         visualizer.showMoment(event, window);
         markerEmitter.emit(event);
         timeline.add(new TimelineEntry(event, window));
@@ -95,7 +115,11 @@ public class MomentXRTPlugin {
         }
     }
 
-    public static void main(String[] args) {
-        new MomentXRTPlugin().start();
+    public ManualTrigger getManualTrigger() {
+        return manualTrigger;
+    }
+
+    public AudioSpikeTrigger getAudioTrigger() {
+        return audioTrigger;
     }
 }

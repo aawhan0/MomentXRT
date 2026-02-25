@@ -1,6 +1,6 @@
 package momentxrt.antmedia;
 
-import momentxrt.MomentXRTPlugin;
+import momentxrt.MomentXCore;
 
 /**
  * Ant Media lifecycle adaptor for MomentX RT.
@@ -8,7 +8,7 @@ import momentxrt.MomentXRTPlugin;
  */
 public class MomentXRTAppAdaptor {
 
-    private MomentXRTPlugin plugin;
+    private MomentXCore plugin;
 
     /**
      * Called when a live stream starts.
@@ -16,7 +16,7 @@ public class MomentXRTAppAdaptor {
     public void onPublishStarted(String streamId) {
         System.out.println("[AntMedia] Stream started: " + streamId);
 
-        plugin = new MomentXRTPlugin();
+        plugin = new MomentXCore();
         plugin.start();
     }
 
