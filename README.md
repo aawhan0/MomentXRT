@@ -2,32 +2,66 @@
 
 Real-time moment detection for live streams.
 
-MomentX RT detects important moments **during** a live stream and instantly creates timeline markers and short clips while the broadcast is still ongoing.  
-It is designed as a lightweight, server-side extension for Ant Media Server.
+MomentX RT is a lightweight server-side system built on Ant Media Server that detects important moments **during** a live broadcast and instantly generates timeline markers and short highlight clips.
+
+Built for the Ant Media AI Hackathon 2026.
 
 ---
 
 ## What It Does
 
 - Monitors live streams in real time  
-- Detects important moments as they happen  
-- Creates timeline markers and short clips instantly  
-- Supports manual producer triggers as a fallback  
+- Detects moments using rule-based triggers  
+- Generates timeline markers instantly  
+- Creates short highlight clips during the broadcast  
+- Supports manual producer trigger (fallback)  
+- Stores confidence score and detection reason  
+- Provides post-stream ranked summary of moments  
+
+All processing happens while the stream is ongoing.
 
 ---
+
+## Architecture
 
 ## Project Structure
 
 ```text
 /MomentX_RT/
   ├─ server/     # Core service & Ant Media integration
-  ├─ triggers/   # Moment detection logic
-  ├─ clipper/    # Clip generation
+  ├─ triggers/   # Automatic + Manual detection logic
+  ├─ clipper/    # Rolling buffer & Clip generation
 ```
+---
+
+
+MomentX RT operates as a modular backend service using stream IDs from Ant Media Server.
+
+---
+
+## Technology Stack
+
+- Ant Media Server (WebRTC streaming)  
+- Python-based backend service  
+- Real-time audio intensity detection  
+- FFmpeg for clip extraction  
+- JSON-based configuration and lightweight storage  
+
+---
+
+## Design Principles
+
+- Low latency first  
+- Reliability over complexity  
+- Explainable detection (confidence + reason tagging)  
+- Modular and extensible structure  
+
 ---
 
 ## Hackathon
 
-- Ant Media AI Hackathon 2026
-- Team: error200
-- Project: MomentX RT
+Ant Media AI Hackathon 2026  
+**Team: error200**  
+Members:
+- Archisha Nigam  
+- Kshitij Pagar  
